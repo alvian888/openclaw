@@ -2,9 +2,10 @@ import {
   createAttachedChannelResultAdapter,
   type ChannelOutboundAdapter,
 } from "openclaw/plugin-sdk/channel-send-result";
-import type { OpenClawConfig } from "openclaw/plugin-sdk/config-runtime";
+import { loadConfig, type OpenClawConfig } from "openclaw/plugin-sdk/config-runtime";
 import { resolveOutboundSendDep, sanitizeForPlainText } from "openclaw/plugin-sdk/infra-runtime";
 import { DEFAULT_ACCOUNT_ID } from "openclaw/plugin-sdk/routing";
+import { resolveDefaultWhatsAppAccountId } from "./accounts.js";
 import { WHATSAPP_LEGACY_OUTBOUND_SEND_DEP_KEYS } from "./outbound-send-deps.js";
 import { lookupInboundMessageMeta } from "./quoted-message.js";
 import { toWhatsappJid } from "./text-runtime.js";
@@ -51,6 +52,17 @@ type CreateWhatsAppOutboundBaseParams = {
   skipEmptyText?: boolean;
 };
 
+function resolveQuoteLookupAccountId(
+  cfg: OpenClawConfig | undefined,
+  accountId?: string | null,
+): string {
+  const explicitAccountId = accountId?.trim();
+  if (explicitAccountId) {
+    return explicitAccountId;
+  }
+  return resolveDefaultWhatsAppAccountId(cfg ?? loadConfig()) ?? DEFAULT_ACCOUNT_ID;
+}
+
 export function createWhatsAppOutboundBase({
   chunker,
   sendMessageWhatsApp,
@@ -91,8 +103,9 @@ export function createWhatsAppOutboundBase({
           resolveOutboundSendDep<WhatsAppSendMessage>(deps, "whatsapp", {
             legacyKeys: WHATSAPP_LEGACY_OUTBOUND_SEND_DEP_KEYS,
           }) ?? sendMessageWhatsApp;
+        const lookupAccountId = resolveQuoteLookupAccountId(cfg, accountId);
         const cachedMeta = replyToId
-          ? lookupInboundMessageMeta(accountId ?? DEFAULT_ACCOUNT_ID, toWhatsappJid(to), replyToId)
+          ? lookupInboundMessageMeta(lookupAccountId, toWhatsappJid(to), replyToId)
           : undefined;
         const quotedMessageKey = replyToId
           ? {
@@ -128,6 +141,7 @@ export function createWhatsAppOutboundBase({
           resolveOutboundSendDep<WhatsAppSendMessage>(deps, "whatsapp", {
             legacyKeys: WHATSAPP_LEGACY_OUTBOUND_SEND_DEP_KEYS,
           }) ?? sendMessageWhatsApp;
+        const lookupAccountId = resolveQuoteLookupAccountId(cfg, accountId);
         return await send(to, normalizeText(text), {
           verbose: false,
           cfg,
@@ -140,7 +154,7 @@ export function createWhatsAppOutboundBase({
           quotedMessageKey: replyToId
             ? (() => {
                 const cachedMeta = lookupInboundMessageMeta(
-                  accountId ?? DEFAULT_ACCOUNT_ID,
+                  lookupAccountId,
                   toWhatsappJid(to),
                   replyToId,
                 );
