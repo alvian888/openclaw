@@ -2,7 +2,7 @@ import {
   createAttachedChannelResultAdapter,
   type ChannelOutboundAdapter,
 } from "openclaw/plugin-sdk/channel-send-result";
-import { loadConfig, type OpenClawConfig } from "openclaw/plugin-sdk/config-runtime";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/config-runtime";
 import { resolveOutboundSendDep, sanitizeForPlainText } from "openclaw/plugin-sdk/infra-runtime";
 import { DEFAULT_ACCOUNT_ID } from "openclaw/plugin-sdk/routing";
 import { resolveDefaultWhatsAppAccountId } from "./accounts.js";
@@ -60,7 +60,7 @@ function resolveQuoteLookupAccountId(
   if (explicitAccountId) {
     return explicitAccountId;
   }
-  return resolveDefaultWhatsAppAccountId(cfg ?? loadConfig()) ?? DEFAULT_ACCOUNT_ID;
+  return cfg ? resolveDefaultWhatsAppAccountId(cfg) : DEFAULT_ACCOUNT_ID;
 }
 
 export function createWhatsAppOutboundBase({
