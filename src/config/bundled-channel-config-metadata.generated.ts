@@ -15205,10 +15205,6 @@ export const GENERATED_BUNDLED_CHANNEL_CONFIG_METADATA = [
               type: "string",
               const: "batched",
             },
-            {
-              type: "string",
-              const: "auto",
-            },
           ],
         },
         heartbeat: {
@@ -15478,10 +15474,6 @@ export const GENERATED_BUNDLED_CHANNEL_CONFIG_METADATA = [
                   {
                     type: "string",
                     const: "batched",
-                  },
-                  {
-                    type: "string",
-                    const: "auto",
                   },
                 ],
               },
